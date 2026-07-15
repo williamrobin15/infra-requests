@@ -1,0 +1,24 @@
+# Hourly: checks every requests/*/ttl-expiry.json, and for anything expired
+# opens an automated "destroy" PR. Non-prod PRs can be set to auto-merge;
+# prod destroys still go through normal review (see check_ttl.py).
+name: ttl-cleanup
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-expired:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python3 scripts/check_ttl.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

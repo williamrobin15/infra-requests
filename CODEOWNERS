@@ -1,0 +1,7 @@
+# Any request touching a prod path requires review from the platform-approvers
+# team. GitHub will not let the PR author approve their own PR, so this also
+# gives you "can't approve your own request" for free.
+requests/*prod*/  @williamrobin15/platform-approvers
+
+# Everything else (dev/staging) can be approved by anyone on the platform team.
+requests/**       @williamrobin15/platform-team

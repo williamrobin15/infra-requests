@@ -1,0 +1,68 @@
+# Runs on every PR opened by Backstage (or anyone) against this repo.
+# This IS the guardrail layer: plan + security scan + cost estimate,
+# all posted as PR comments so the approver sees them before approving.
+name: guardrails
+
+on:
+  pull_request:
+    paths:
+      - "requests/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write   # for keyless GCP auth during `terraform plan`
+
+jobs:
+  plan-and-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find changed request dir
+        id: dir
+        run: |
+          d=$(git diff --name-only origin/main...HEAD | grep '^requests/' | head -1 | xargs dirname)
+          echo "path=$d" >> "$GITHUB_OUTPUT"
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init & plan
+        working-directory: ${{ steps.dir.outputs.path }}
+        run: |
+          terraform init -input=false
+          terraform plan -input=false -no-color -out=tfplan | tee plan.txt
+          terraform show -no-color tfplan >> plan.txt
+
+      - name: Comment plan on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '${{ steps.dir.outputs.path }}/plan.txt';
+            const body = fs.readFileSync(path, 'utf8').slice(0, 60000);
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "### Terraform Plan\n```\n" + body + "\n```",
+            });
+
+      - name: Security scan (tfsec)
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.3.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          working_directory: ${{ steps.dir.outputs.path }}
+
+      - name: Cost estimate (Infracost)
+        uses: infracost/actions/comment@v3
+        with:
+          path: ${{ steps.dir.outputs.path }}
+          behavior: update
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
