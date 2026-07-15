@@ -59,10 +59,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           working_directory: ${{ steps.dir.outputs.path }}
 
-      - name: Cost estimate (Infracost)
-        uses: infracost/actions/comment@v2
-        with:
-          path: ${{ steps.dir.outputs.path }}
-          behavior: update
-        env:
-          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+
