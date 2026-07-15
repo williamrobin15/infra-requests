@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: dsfdfsdf
+  description: GCP VM requested via self-service portal
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/williamrobin15/infra-requests
+  tags:
+    - gcp
+    - vm
+    - dev
+spec:
+  type: compute-instance
+  owner: 
+  system: infra-requests
