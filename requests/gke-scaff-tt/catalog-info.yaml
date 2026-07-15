@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: gke-scaff-tt
+  description: "GKE Cluster requested for environment: dev"
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/williamrobin15/infra-requests/tree/main/requests/gke-scaff-tt
+    backstage.io/project-id: "project-eefd8d29-a5e4-42f7-964"
+  labels:
+    environment: "dev"
+    requester: ""
+spec:
+  type: kubernetes-cluster
+  owner: user:
+  lifecycle: experimental
