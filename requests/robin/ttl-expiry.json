@@ -1,0 +1,7 @@
+{
+  "service_name": "robin",
+  "environment": "dev",
+  "requester": "",
+  "ttl_hours": 24,
+  "created_at": "GENERATED_AT_MERGE_TIME"
+}
